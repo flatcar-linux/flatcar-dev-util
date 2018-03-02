@@ -128,13 +128,13 @@ start_dev_server() {
   elif [ -n "${FLAGS_archive_dir}" ]; then
     devserver_flags="${devserver_flags} \
         --archive_dir $(reinterpret_path_for_chroot ${FLAGS_archive_dir}) -t"
-    IMAGE_PATH="${FLAGS_archive_dir}/coreos_test_image.bin"
+    IMAGE_PATH="${FLAGS_archive_dir}/flatcar_test_image.bin"
   else
     # IMAGE_PATH should be the newest image and learn the board from
     # the target.
     learn_board
     IMAGE_PATH="$(${SCRIPTS_DIR}/get_latest_image.sh --board="${FLAGS_board}")"
-    IMAGE_PATH="${IMAGE_PATH}/coreos_developer_image.bin"
+    IMAGE_PATH="${IMAGE_PATH}/flatcar_developer_image.bin"
     devserver_flags="${devserver_flags} \
         --image $(reinterpret_path_for_chroot ${IMAGE_PATH})"
   fi
@@ -459,7 +459,7 @@ run_once() {
     info "New updated in ${known_hosts}, backup made."
   fi
 
-  remote_sh "grep ^COREOS_RELEASE_DESCRIPTION= /etc/lsb-release"
+  remote_sh "grep ^FLATCAR_RELEASE_DESCRIPTION= /etc/lsb-release"
   if [ ${FLAGS_verify} -eq ${FLAGS_TRUE} ]; then
     verify_image
 
