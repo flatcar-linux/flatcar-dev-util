@@ -11,9 +11,9 @@ import portage
 
 # Find the version of the currently running release.
 release = False
-with open('/usr/share/coreos/release') as release_file:
+with open('/usr/share/flatcar/release') as release_file:
 	for line in release_file:
-		if line.startswith('COREOS_RELEASE_VERSION='):
+		if line.startswith('FLATCAR_RELEASE_VERSION='):
 			release = line.split('=', 1)[1].strip()
 
 # Attempt to read Git commits from this release's manifest.
