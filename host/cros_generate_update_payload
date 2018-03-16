@@ -194,7 +194,7 @@ if [ "$DELTA" -eq "$FLAGS_TRUE" ]; then
 else
     if [ "$FLAGS_include_kernel" -eq "$FLAGS_TRUE" ]; then
 	"$GENERATOR" \
-	    -new_image "$DST_ROOT" -new_kernel "$ESP_MNT/coreos/vmlinuz-a" \
+	    -new_image "$DST_ROOT" -new_kernel "$ESP_MNT/flatcar/vmlinuz-a" \
 	    -out_file "$FLAGS_output" -private_key "$FLAGS_private_key"
     else
 	"$GENERATOR" \
