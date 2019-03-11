@@ -26,9 +26,9 @@ class GMerger(object):
     self.update_conf = self.ParseUpdateConf(conf_lines)
     try:
       self.devkit_url = self.update_conf['DEVSERVER']
-      self.board_name = self.update_conf['COREOS_RELEASE_BOARD']
+      self.board_name = self.update_conf['FLATCAR_RELEASE_BOARD']
     except KeyError as e:
-      sys.exit('Could not find /etc/coreos/update.conf value: ' + e.message)
+      sys.exit('Could not find /etc/flatcar/update.conf value: ' + e.message)
 
   def ParseUpdateConf(self, conf_lines):
     """Convert a list of KEY=VALUE lines to a dictionary."""
@@ -114,9 +114,9 @@ def main():
 
   package_name = remaining_arguments[0]
 
-  with open('/usr/share/coreos/release') as conf:
+  with open('/usr/share/flatcar/release') as conf:
     conf_data = conf.readlines()
-  with open('/etc/coreos/update.conf') as conf:
+  with open('/etc/flatcar/update.conf') as conf:
     conf_data += conf.readlines()
   merger = GMerger(conf_data)
   merger.RequestPackageBuild(package_name)
