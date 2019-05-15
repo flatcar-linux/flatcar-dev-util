@@ -281,7 +281,7 @@ class Tools:
 
     This works by finding and executing the version script:
 
-    src/third_party/coreos-overlay/coreos/config/coreos_version.sh
+    src/third_party/coreos-overlay/coreos/config/flatcar_version.sh
 
     Returns:
       Version string in the form '0.14.726.2011_07_07_1635'
