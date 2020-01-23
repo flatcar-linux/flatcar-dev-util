@@ -17,11 +17,11 @@ with open('/usr/share/flatcar/release') as release_file:
 			release = line.split('=', 1)[1].strip()
 
 # Attempt to read Git commits from this release's manifest.
-branch = 'master'
+branch = 'flatcar-master'
 commits = {}
 if release:
 	branch = 'build-' + release.split('.', 1)[0]
-	manifest = "https://raw.githubusercontent.com/coreos/manifest/v%s/release.xml" % release
+	manifest = "https://raw.githubusercontent.com/flatcar-linux/manifest/v%s/release.xml" % release
 	try:
 		from xml.dom.minidom import parseString as pxs
 		try:  # Python 3
