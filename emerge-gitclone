@@ -40,6 +40,13 @@ for repo in portage.db[eroot]['vartree'].settings.repositories:
 		continue
 	commit = commits.get(repo.sync_uri.replace('//', '').replace('.git', '').split('/', 1)[-1])
 
+	# If commit points to a branch name starting with "refs/heads",
+	# "refs/heads/flatcar-build-x", then we cannot simply get its
+	# commit with the name, because the branch was not checked out.
+	# In that case we need to make the commit point to the exact
+	# remote branch name, like "refs/remotes/origin/flatcar-build-x".
+	commit = commit.replace('refs/heads/', 'refs/remotes/origin/')
+
 	print(">>> Cloning repository '%s' from '%s'..." % (repo.name, repo.sync_uri))
 
 	if os.path.isdir(repo.location):
