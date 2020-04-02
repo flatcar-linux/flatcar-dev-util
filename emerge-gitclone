@@ -17,10 +17,8 @@ with open('/usr/share/flatcar/release') as release_file:
 			release = line.split('=', 1)[1].strip()
 
 # Attempt to read Git commits from this release's manifest.
-branch = 'flatcar-master'
 commits = {}
 if release:
-	branch = 'build-' + release.split('.', 1)[0]
 	manifest = "https://raw.githubusercontent.com/flatcar-linux/manifest/v%s/release.xml" % release
 	try:
 		from xml.dom.minidom import parseString as pxs
@@ -56,7 +54,7 @@ for repo in portage.db[eroot]['vartree'].settings.repositories:
 
 	print('>>> Starting git clone in %s' % repo.location)
 	os.umask(0o022)
-	subprocess.check_call(['git', 'clone', '-b', branch, repo.sync_uri, repo.location])
+	subprocess.check_call(['git', 'clone', repo.sync_uri, repo.location])
 	print('>>> Git clone in %s successful' % repo.location)
 	if commit:
 		subprocess.check_call(['git', '-C', repo.location, 'checkout', commit])
