@@ -43,7 +43,10 @@ for repo in portage.db[eroot]['vartree'].settings.repositories:
 	# commit with the name, because the branch was not checked out.
 	# In that case we need to make the commit point to the exact
 	# remote branch name, like "refs/remotes/origin/flatcar-build-x".
-	commit = commit.replace('refs/heads/', 'refs/remotes/origin/')
+	if commit:
+		commit = commit.replace('refs/heads/', 'refs/remotes/origin/')
+	else:
+		print("Warning: No revision found for " + repo.sync_uri)
 
 	print(">>> Cloning repository '%s' from '%s'..." % (repo.name, repo.sync_uri))
 
