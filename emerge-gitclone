@@ -1,6 +1,4 @@
-#!/usr/bin/python
-
-from __future__ import print_function
+#!/usr/bin/python3
 
 import os
 import shutil
@@ -22,10 +20,7 @@ if release:
 	manifest = "https://raw.githubusercontent.com/kinvolk/manifest/v%s/release.xml" % release
 	try:
 		from xml.dom.minidom import parseString as pxs
-		try:  # Python 3
-			from urllib import request as req
-		except ImportError:  # Python 2
-			import urllib2 as req
+		from urllib import request as req
 		for repo in pxs(req.urlopen(manifest).read()).getElementsByTagName('project'):
 			commits[repo.getAttribute('name')] = repo.getAttribute('revision')
 	except Exception:
