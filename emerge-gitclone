@@ -17,7 +17,11 @@ with open('/usr/share/flatcar/release') as release_file:
 # Attempt to read Git commits from this release's manifest.
 commits = {}
 if release:
-	manifest = "https://raw.githubusercontent.com/kinvolk/manifest/v%s/release.xml" % release
+	if "+" in release:
+		dev_build_tag = release.split("+")[1]
+		manifest = "https://raw.githubusercontent.com/kinvolk/manifest-builds/%s/%s.xml" % (dev_build_tag, dev_build_tag)
+	else:
+		manifest = "https://raw.githubusercontent.com/kinvolk/manifest/v%s/release.xml" % release
 	try:
 		from xml.dom.minidom import parseString as pxs
 		from urllib import request as req
@@ -25,6 +29,7 @@ if release:
 			commits[repo.getAttribute('name')] = repo.getAttribute('revision')
 	except Exception:
 		print(">>> Failed to read manifest commits for %s" % release)
+		sys.exit(1)
 
 synced = False
 eroot = portage.settings['EROOT']
