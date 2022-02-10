@@ -1,0 +1,1 @@
+- Fetch correct commit in case of non-release in emerge-gitclone [flatcar-dev-util#7](https://github.com/flatcar-linux/flatcar-dev-util/pull/7)
