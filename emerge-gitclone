@@ -60,7 +60,13 @@ for repo in portage.db[eroot]['vartree'].settings.repositories:
 	subprocess.check_call(['git', 'clone', repo.sync_uri, repo.location])
 	print('>>> Git clone in %s successful' % repo.location)
 	if commit:
-		subprocess.check_call(['git', '-C', repo.location, 'checkout', commit])
+		if commit.startswith('refs/pull/'):
+			pull=commit.removeprefix('refs/')
+			nr=commit.removeprefix('refs/pull/').removesuffix('/head')
+			subprocess.check_call(['git', '-C', repo.location, 'fetch', 'origin', pull])
+			subprocess.check_call(['git', '-C', repo.location, 'checkout', '-b', 'pr{}'.format(nr), 'FETCH_HEAD'])
+		else:
+			subprocess.check_call(['git', '-C', repo.location, 'checkout', commit])
 		print('>>> Release checkout %s in %s successful' % (commit, repo.location))
 	synced = True
 
