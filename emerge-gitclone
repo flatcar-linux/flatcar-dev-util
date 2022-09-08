@@ -9,68 +9,97 @@ import sys
 
 import portage
 
-# Find the version of the currently running release.
-release = False
-with open('/usr/share/flatcar/release') as release_file:
-	for line in release_file:
-		if line.startswith('FLATCAR_RELEASE_VERSION='):
-			release = line.split('=', 1)[1].strip()
 
-# Attempt to read Git commits from this release's manifest.
-commits = {}
-if release:
-	manifest = "https://raw.githubusercontent.com/flatcar-linux/manifest/v%s/release.xml" % release
-	try:
-		from xml.dom.minidom import parseString as pxs
-		try:  # Python 3
-			from urllib import request as req
-		except ImportError:  # Python 2
-			import urllib2 as req
-		for repo in pxs(req.urlopen(manifest).read()).getElementsByTagName('project'):
-			commits[repo.getAttribute('name')] = repo.getAttribute('revision')
-	except Exception:
-		print(">>> Failed to read manifest commits for %s" % release)
+GIT_URI = "https://github.com/flatcar-linux/%s.git"
+GIT_LOCATION = "/var/lib/portage/%s"
 
-synced = False
-eroot = portage.settings['EROOT']
-for repo in portage.db[eroot]['vartree'].settings.repositories:
-	if repo.sync_type != 'git':
-		continue
-	commit = commits.get(repo.sync_uri.replace('//', '').replace('.git', '').split('/', 1)[-1])
 
-	# If commit points to a branch name starting with "refs/heads",
-	# "refs/heads/flatcar-build-x", then we cannot simply get its
-	# commit with the name, because the branch was not checked out.
-	# In that case we need to make the commit point to the exact
-	# remote branch name, like "refs/remotes/origin/flatcar-build-x".
-	if commit:
-		commit = commit.replace('refs/heads/', 'refs/remotes/origin/')
-	else:
-		print("Warning: No revision found for " + repo.sync_uri)
+def get_release():
+    """Return the version of the currently running release."""
+    release = False
+    with open("/usr/share/flatcar/release") as release_file:
+        for line in release_file:
+            if line.startswith("FLATCAR_RELEASE_VERSION="):
+                release = line.split("=", 1)[1].strip()
 
-	print(">>> Cloning repository '%s' from '%s'..." % (repo.name, repo.sync_uri))
+    return release
 
-	if os.path.isdir(repo.location):
-		shutil.rmtree(repo.location)
-	elif os.path.lexists(repo.location):
-		os.unlink(repo.location)
 
-	print('>>> Starting git clone in %s' % repo.location)
-	os.umask(0o022)
-	subprocess.check_call(['git', 'clone', repo.sync_uri, repo.location])
-	print('>>> Git clone in %s successful' % repo.location)
-	if commit:
-		subprocess.check_call(['git', '-C', repo.location, 'checkout', commit])
-		print('>>> Release checkout %s in %s successful' % (commit, repo.location))
-	synced = True
+def get_channel():
+    """Return the channel for the current deployment"""
+    channel = None
+    with open("/usr/share/flatcar/update.conf") as update_conf:
+        for line in update_conf:
+            if line.startswith("GROUP"):
+                channel = line.split("=", 1)[1].strip()
 
-if synced:
-	# Perform normal post-sync tasks
-	configroot = portage.settings['PORTAGE_CONFIGROOT']
-	post_sync = '%s/etc/portage/bin/post_sync' % configroot
-	if os.path.exists(post_sync):
-		subprocess.check_call([post_sync])
-	subprocess.check_call(['emerge', '--check-news', '--quiet'])
-else:
-	sys.stderr.write('>>> No git repositories configured.\n')
-	sys.exit(1)
+    return channel
+
+
+def git_clone_repo(repo_url, repo_location):
+    """Clone the given repo at the given location"""
+    print(">>> Starting git clone in %s" % repo_location)
+    os.umask(0o022)
+    subprocess.check_call(
+        ["git", "clone", "--recurse-submodules", repo_url, repo_location]
+    )
+    print(">>> Git clone in %s successful" % repo_location)
+
+
+def sync_repo():
+    release = get_release()
+    channel = get_channel()
+    ref = "%s-%s" % (channel, release)
+
+    repo_list = ["scripts", "coreos-overlay", "portage-stable"]
+
+    for repo in repo_list:
+        if os.path.isdir(GIT_LOCATION % repo) and not os.path.islink(
+            GIT_LOCATION % repo
+        ):
+            shutil.rmtree(GIT_LOCATION % repo)
+        if os.path.lexists(GIT_LOCATION % repo):
+            os.unlink(GIT_LOCATION % repo)
+
+        if repo == "scripts":
+            git_clone_repo(
+                repo_url=GIT_URI % repo,
+                repo_location=GIT_LOCATION % repo,
+            )
+
+            subprocess.check_output(
+                [
+                    "git",
+                    "-C",
+                    GIT_LOCATION % repo,
+                    "checkout",
+                    "--recurse-submodules",
+                    ref,
+                ]
+            )
+        else:
+            print(">>> Symlink the repository with the appropriate folder - %s" % repo)
+            os.symlink(
+                GIT_LOCATION % "scripts"
+                + "/sdk_container/src/third_party/%s" % repo,
+                GIT_LOCATION % repo,
+            )
+
+
+def main():
+    try:
+        sync_repo()
+        # Perform normal post-sync tasks
+        configroot = portage.settings["PORTAGE_CONFIGROOT"]
+        post_sync = "%s/etc/portage/bin/post_sync" % configroot
+        if os.path.exists(post_sync):
+            subprocess.check_call([post_sync])
+        subprocess.check_call(["emerge", "--check-news", "--quiet"])
+    except Exception as e:
+        print(e.output)
+        sys.stderr.write(">>> No git repositories configured.\n")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
