@@ -10,7 +10,7 @@ import sys
 import portage
 
 
-GIT_URI = "https://github.com/flatcar-linux/%s.git"
+GIT_URI = "https://github.com/flatcar/%s.git"
 GIT_LOCATION = "/var/lib/portage/%s"
 
 
