@@ -30,6 +30,8 @@ def get_channel():
         for line in update_conf:
             if line.startswith("GROUP"):
                 channel = line.split("=", 1)[1].strip()
+                if channel == 'developer':
+                    channel = 'main'
 
     return channel
 
