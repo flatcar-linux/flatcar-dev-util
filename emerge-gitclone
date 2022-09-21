@@ -10,7 +10,7 @@ import sys
 import portage
 
 
-GIT_URI = "https://github.com/flatcar-linux/%s.git"
+GIT_URI = "https://github.com/flatcar/%s.git"
 GIT_LOCATION = "/var/lib/portage/%s"
 
 
@@ -20,7 +20,7 @@ def get_release():
     with open("/usr/share/flatcar/release") as release_file:
         for line in release_file:
             if line.startswith("FLATCAR_RELEASE_VERSION="):
-                release = line.split("=", 1)[1].strip()
+                release = line.split("=", 1)[1].strip().replace("+", "-", 1)
 
     return release
 
@@ -32,6 +32,8 @@ def get_channel():
         for line in update_conf:
             if line.startswith("GROUP"):
                 channel = line.split("=", 1)[1].strip()
+                if channel == 'developer':
+                    channel = 'main'
 
     return channel
 
