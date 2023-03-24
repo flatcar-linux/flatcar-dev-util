@@ -56,9 +56,8 @@ def sync_repo():
     #   a dev build which does not necessarily have a tag on 'scripts'.
     # These version strings look like e.g. "3552.0.0+nightly-20230323-2100-4-g5d72f4ee",
     #   with "-g<checksum>" being a git ref.
-    gitref_pat=r'-g([0-9,a-f]+)$'
-    ref_match = re.search(gitref_pat,release)
-    print(f"m: {ref_match}")
+    gitref_pat=r'-g([0-9A-Fa-f]+)$'
+    ref_match = re.search(gitref_pat, release)
     if ref_match:
         git_ref=ref_match.group(1)
         print(f">>> Gitref detected in version {ref}, will check out {git_ref}.")
