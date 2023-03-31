@@ -37,13 +37,32 @@ def get_channel():
     return channel
 
 
-def git_clone_repo(repo_url, repo_location):
-    """Clone the given repo at the given location"""
+def git_clone_scripts(repo_url, repo_location, ref):
+    """Clone the scripts repo at the given location, and handle submodules (if applicable)"""
     print(f">>> Starting git clone in {repo_location}")
     os.umask(0o022)
     subprocess.check_call(
-        ["git", "clone", "--recurse-submodules", repo_url, repo_location]
+        ["git", "clone", repo_url, repo_location]
     )
+
+    # Check if this ref uses submodules and check these out if it does.
+    subprocess.check_output(
+        ["git", "-C", repo_location, "checkout", ref]
+    )
+    try:
+        with open(repo_location + '/.gitmodules') as gm:
+            gmc = gm.read()
+            if '[submodule ' in gmc:
+                print(f">>> Submodules detected in {ref}.")
+                subprocess.check_output(
+                    ["git", "-C", repo_location, "submodule", "init"]
+                )
+                subprocess.check_output(
+                    ["git", "-C", repo_location, "submodule", "update"]
+                )
+    except (FileNotFoundError, IOError):
+        print(f">>> No submodules detected in {ref}. Assuming unified scripts repo.")
+
     print(f">>> Git clone in {repo_location} successful")
 
 
@@ -74,21 +93,12 @@ def sync_repo():
             os.unlink(GIT_LOCATION.format(repo=repo))
 
         if repo == "scripts":
-            git_clone_repo(
+            git_clone_scripts(
                 repo_url=GIT_URI.format(repo=repo),
                 repo_location=GIT_LOCATION.format(repo=repo),
+                ref=ref
             )
 
-            subprocess.check_output(
-                [
-                    "git",
-                    "-C",
-                    GIT_LOCATION.format(repo=repo),
-                    "checkout",
-                    "--recurse-submodules",
-                    ref,
-                ]
-            )
         else:
             print(f">>> Symlink the repository with the appropriate folder - {repo}")
             os.symlink(
