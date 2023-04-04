@@ -60,7 +60,7 @@ def git_clone_scripts(repo_url, repo_location, ref):
                 subprocess.check_output(
                     ["git", "-C", repo_location, "submodule", "update"]
                 )
-            else
+            else:
                 print(f">>> Empty or invalid submodule config detected in {ref}")
                 print(f">>>  at {repo_location}/.gitmodules. Ignoring and continuing w/o submodules.")
     except (FileNotFoundError, IOError):
