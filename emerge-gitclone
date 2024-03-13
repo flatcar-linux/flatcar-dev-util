@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+# Copyright The Flatcar Authors.
+# SPDX-License-Identifier: Apache-2.0
 
 import os
 import shutil
