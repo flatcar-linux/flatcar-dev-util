@@ -87,7 +87,7 @@ def sync_repo():
         print(f">>> Gitref detected in version {ref}, will check out {git_ref}.")
         ref = git_ref
 
-    repo_list = ["scripts", "coreos-overlay", "portage-stable"]
+    repo_list = ["scripts", "flatcar-overlay", "gentoo-subset"]
 
     for repo in repo_list:
         if os.path.isdir(GIT_LOCATION.format(repo=repo)) and not os.path.islink(
@@ -108,7 +108,7 @@ def sync_repo():
             print(f">>> Symlink the repository with the appropriate folder - {repo}")
             os.symlink(
                 GIT_LOCATION.format(repo="scripts")
-                + f"/sdk_container/src/third_party/{repo}",
+                + f"/repos/{repo}",
                 GIT_LOCATION.format(repo=repo),
             )
 
