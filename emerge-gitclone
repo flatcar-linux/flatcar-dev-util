@@ -44,13 +44,18 @@ def git_clone_scripts(repo_url, repo_location, ref):
     print(f">>> Starting git clone in {repo_location}")
     os.umask(0o022)
     subprocess.check_call(
-        ["git", "clone", repo_url, repo_location]
+        ["git", "init", "--quiet", repo_location]
     )
-
-    # Check if this ref uses submodules and check these out if it does.
+    subprocess.check_call(
+        ["git", "-C", repo_location, "remote", "add", "origin", repo_url]
+    )
     subprocess.check_output(
-        ["git", "-C", repo_location, "checkout", ref]
+        ["git", "-C", repo_location, "fetch", "--depth=1", "origin", ref],
     )
+    subprocess.check_output(
+        ["git", "-C", repo_location, "checkout", "FETCH_HEAD"],
+    )
+    # Check if this ref uses submodules and check these out if it does.
     try:
         with open(repo_location + '/.gitmodules') as gm:
             gmc = gm.read()
